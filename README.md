@@ -226,3 +226,26 @@ Here’s a brief description of each component, model, and DTO, including the fi
     - `status`: Status of the call
 
 This structure will help ensure that your models and DTOs are well-defined and cover the necessary fields for functionality in your application.
+
+## Lombok annotations :
+
+| **Annotation**                | **Function**                                                                                     |
+|-------------------------------|--------------------------------------------------------------------------------------------------|
+| `@Getter`                     | Generates getter methods for fields in the class.                                               |
+| `@Setter`                     | Generates setter methods for fields in the class.                                               |
+| `@ToString`                   | Generates a `toString()` method including all fields of the class by default.                   |
+| `@EqualsAndHashCode`          | Generates `equals(Object o)` and `hashCode()` methods based on fields of the class.              |
+| `@NoArgsConstructor`          | Generates a no-arguments constructor for the class.                                              |
+| `@AllArgsConstructor`         | Generates a constructor with all fields as parameters.                                          |
+| `@RequiredArgsConstructor`    | Generates a constructor for all final fields and fields marked with `@NonNull`.                |
+| `@Data`                       | Combines `@Getter`, `@Setter`, `@ToString`, `@EqualsAndHashCode`, and `@RequiredArgsConstructor` annotations. |
+| `@Builder`                    | Provides a builder pattern for the class to create immutable objects.                           |
+| `@Value`                      | Creates an immutable class with `@Getter`, `@ToString`, `@EqualsAndHashCode`, and a final constructor. |
+| `@Singular`                   | Used with `@Builder` to generate methods for adding elements to a collection field.              |
+| `@Log`                        | Generates a logger instance with the specified logger type (e.g., `@Slf4j`, `@Log4j`).          |
+| `@Slf4j`                      | Generates a `Logger` instance using SLF4J for the class.                                         |
+| `@Log4j`                      | Generates a `Logger` instance using Log4j for the class.                                         |
+| `@Log4j2`                     | Generates a `Logger` instance using Log4j2 for the class.                                        |
+| `@Transactional`              | Indicates that the annotated method or class should be executed within a transaction context.    |
+
+These Lombok annotations can simplify the creation of constructors, logging, and other common tasks, reducing boilerplate code and making your Spring Boot application more maintainable.
