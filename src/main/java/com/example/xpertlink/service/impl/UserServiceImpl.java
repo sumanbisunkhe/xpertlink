@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
         sendOtpByEmail(user.getEmail(), user.getOtpCode());
     }
 
-  @Override
+    @Override
     public boolean verifyOtp(String email, String otp) {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
@@ -173,12 +173,14 @@ public class UserServiceImpl implements UserService {
             userRepo.save(user);
 
             //Send welcome email
-            String message = String.format("Hello %s,\n\nWelcome to BlogEcho, a vibrant platform where the boundaries of learning and sharing are limitless. Here, you'll find an endless opportunity to expand your knowledge and engage with a community eager to exchange insights and ideas.", user.getUsername());
-            EmailDto emailDto = new EmailDto(user.getEmail(), "Welcome to BlogEcho", message);
+            String message = String.format("Hello %s,\n\nWelcome to XpertLink. Let's Connect, Learn and Grow.", user.getUsername());
+            EmailDto emailDto = new EmailDto(user.getEmail(), "Welcome to XpertLink", message);
             emailService.sendEmail(emailDto);
         }
         return isValid;
     }
+
+
 
     @Override
     public UserDetails loadUserByUsername(String username) {
