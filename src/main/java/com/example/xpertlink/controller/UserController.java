@@ -4,6 +4,7 @@ import com.example.xpertlink.dto.UserDto;
 import com.example.xpertlink.jwt.AuthenticationRequest;
 import com.example.xpertlink.jwt.AuthenticationResponse;
 import com.example.xpertlink.jwt.JwtUtil;
+import com.example.xpertlink.model.User;
 import com.example.xpertlink.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -31,16 +34,16 @@ import java.util.stream.Collectors;
 @Validated
 public class UserController {
 
-    private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
-        this.userService = userService;
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
-    }
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
+
+
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> createUser(@Valid @RequestBody UserDto userDto, BindingResult bindingResult) {
@@ -87,21 +90,24 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
+            // Authenticate the user
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
             );
+
+            // Generate JWT token
+            String token = jwtUtil.generateToken(authenticationRequest.getUsername());
+
+            // Return the token in the response
+            return ResponseEntity.ok(new AuthenticationResponse(token));
         } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
+            // Handle authentication failure
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
-
-        final UserDetails userDetails = userService.loadUserByUsername(authenticationRequest.getUsername());
-
-        final String jwt = jwtUtil.generateToken(userDetails.getUsername());
-
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -146,7 +152,7 @@ public class UserController {
 
     @GetMapping("/id/{id}")
     public ResponseEntity<Map<String, Object>> getUserById(@PathVariable Long id) {
-        UserDto user = userService.getUserById(id);
+        Optional<UserDto> user = userService.getUserById(id);
         Map<String, Object> response = Map.of(
                 "message", "User with ID "+id+" fetched successfully.",
                 "data", user

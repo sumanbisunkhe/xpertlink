@@ -3,10 +3,13 @@ package com.example.xpertlink.service.impl;
 import com.example.xpertlink.Repository.UserRepository;
 import com.example.xpertlink.dto.EmailDto;
 import com.example.xpertlink.dto.UserDto;
+import com.example.xpertlink.enums.Role;
 import com.example.xpertlink.exceptions.UserNotFoundException;
+import com.example.xpertlink.exceptions.UsernameNotFoundException;
 import com.example.xpertlink.model.User;
 import com.example.xpertlink.service.EmailService;
 import com.example.xpertlink.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,8 +20,11 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
+
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
@@ -94,39 +100,137 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(Long id, UserDto userDto) {
-        return null;
+        // Find the user by ID
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+
+        // Update user details
+        boolean isChanged = false;
+
+        if (!user.getFullName().equals(userDto.getFullName())) {
+            user.setFullName(userDto.getFullName());
+            isChanged = true;
+        }
+
+        if (!user.getAddress().equals(userDto.getAddress())) {
+            user.setAddress(userDto.getAddress());
+            isChanged = true;
+        }
+
+        if (!user.getAge().equals(userDto.getAge())) {
+            user.setAge(userDto.getAge());
+            isChanged = true;
+        }
+
+        if (!user.getGender().equals(userDto.getGender())) {
+            user.setGender(userDto.getGender());
+            isChanged = true;
+        }
+
+        if (!user.getRole().equals(userDto.getRole())) {
+            user.setRole(userDto.getRole());
+            isChanged = true;
+        }
+
+        if (!user.getEmail().equals(userDto.getEmail())) {
+            user.setEmail(userDto.getEmail());
+            isChanged = true;
+        }
+
+        if (!user.getUsername().equals(userDto.getUsername())) {
+            user.setUsername(userDto.getUsername());
+            isChanged = true;
+        }
+
+        // Update password if provided
+        if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            isChanged = true;
+        }
+
+        if (isChanged) {
+            // Disable the user and send OTP
+            user.setEnabled(false);
+            String otpCode =generateOtp();
+            user.setOtpCode(otpCode);
+            user.setOtpExpiryTime(LocalDateTime.now().plusMinutes(5));
+            sendOtpByEmail(user.getEmail(), otpCode);
+            user.setDateCreated(user.getDateCreated());
+        }
+
+        // Save the updated user
+        User updatedUser = userRepo.save(user);
+
+        return ConvertToDto(updatedUser);
+    }
+
+
+    @Override
+    public Optional<UserDto> getUserById(Long id) {
+        return userRepo.findById(id).map(this::ConvertToDto);
     }
 
     @Override
-    public UserDto getUserById(Long id) {
-        return null;
+    public Optional<UserDto> getUserByUsername(String username) {
+        return userRepo.findByUsername(username).map(this::ConvertToDto);
     }
 
     @Override
-    public Optional<User> getUserByUsername(String username) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<User> getUserByEmail(String email) {
-        return Optional.empty();
+    public Optional<UserDto> getUserByEmail(String email) {
+        return userRepo.findByEmail(email).map(this::ConvertToDto);
     }
 
     @Override
     public void deleteUserById(Long id) {
-
+        if (userRepo.existsById(id)) {
+            userRepo.deleteById(id);
+        } else {
+            throw new UserNotFoundException("User not found with id: " + id);
+        }
     }
 
     @Override
     public void deleteUserByUsername(String username) {
+        User user= userRepo.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with name: " + username));
+        userRepo.delete(user);
 
     }
 
     @Override
     public UserDto EnableOrDisableUser(UserDto userDto) {
-        return null;
+        User user = userRepo.findById(userDto.getId())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userDto.getId()));
+
+        user.setEnabled(userDto.isEnabled());
+        User updatedUser = userRepo.save(user);
+        return ConvertToDto(updatedUser);
     }
 
+    @Override
+    public UserDetails loadUserByUsername(String username) {
+        User user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRole().name())
+                .build();
+    }
+
+    @Override
+    public List<UserDto> getAllUsers() {
+        return userRepo.findAll().stream()
+                .map(this::ConvertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getAllEmails() {
+        return userRepo.findAll().stream()
+                .map(User::getEmail)
+                .collect(Collectors.toList());
+    }
 
     // OTP generation and email sending
     private String generateOtp() {
@@ -178,23 +282,6 @@ public class UserServiceImpl implements UserService {
             emailService.sendEmail(emailDto);
         }
         return isValid;
-    }
-
-
-
-    @Override
-    public UserDetails loadUserByUsername(String username) {
-        return null;
-    }
-
-    @Override
-    public List<UserDto> getAllUsers() {
-        return List.of();
-    }
-
-    @Override
-    public List<String> getAllEmails() {
-        return List.of();
     }
 
 
