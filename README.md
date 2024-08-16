@@ -39,10 +39,10 @@ backend/
 │   │   │               │   └── VideoCallRepository.java
 │   │   │               ├── service/
 │   │   │               │   ├──impl
-│   │   │               │   │  ├── CustomCustomerDetailsService 
-│   │   │               │   │  ├── DatabaseInitializer  
-│   │   │               │   │  ├── EmailServiceImpl
-│   │   │               │   │  ├── UserService.java
+│   │   │               │   │  ├── CustomCustomerDetailsService.java 
+│   │   │               │   │  ├── DatabaseInitializer.java  
+│   │   │               │   │  ├── EmailServiceImpl.java
+│   │   │               │   │  ├── UserServiceImpl.java
 │   │   │               │   │
 │   │   │               │   ├── UserService.java
 │   │   │               │   ├── EmailService.java
