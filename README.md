@@ -12,9 +12,8 @@ backend/
 │   │   │           └── xpertlink/
 │   │   │               ├── XpertLinkApplication.java
 │   │   │               ├── config/
-│   │   │               │   ├── SecurityConfig.java
-│   │   │               │   ├── JwtUtil.java
-│   │   │               │   └── MailConfig.java
+│   │   │               │   |── SecurityConfig.java
+│   │   │               │   
 │   │   │               ├── controller/
 │   │   │               │   ├── AuthController.java
 │   │   │               │   ├── UserController.java
@@ -39,15 +38,22 @@ backend/
 │   │   │               │   ├── MessageRepository.java
 │   │   │               │   └── VideoCallRepository.java
 │   │   │               ├── service/
+│   │   │               │   ├──impl
+│   │   │               │   │  ├── CustomCustomerDetailsService 
+│   │   │               │   │  ├── DatabaseInitializer  
+│   │   │               │   │  ├── EmailServiceImpl
+│   │   │               │   │  ├── UserService.java
+│   │   │               │   │
 │   │   │               │   ├── UserService.java
-│   │   │               │   ├── AdminService.java
+│   │   │               │   ├── EmailService.java
 │   │   │               │   ├── ExpertService.java
 │   │   │               │   ├── ConsultationService.java
-│   │   │               │   ├── MailService.java
+│   │   │               │   ├── AdminService.java
 │   │   │               │   ├── MessageService.java
 │   │   │               │   └── VideoCallService.java
 │   │   │               ├── dto/
 │   │   │               │   ├── UserDto.java
+|   |   |               |   ├── EmailDto.java
 │   │   │               │   ├── AdminDto.java
 │   │   │               │   ├── ExpertDto.java
 │   │   │               │   ├── AuthRequest.java
